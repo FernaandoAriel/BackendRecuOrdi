@@ -1,10 +1,14 @@
 import app from "./app.js";
-import "./database.js";
-import {config} from "./src/config.js";
+import { config } from "./src/config.js";
 
 async function main() {
-    app.listen(config.server.PORT);
-    console.log("Server on port " + config.server.PORT);
+    const PORT = config.server.PORT || 3000;
+    
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`API available at http://localhost:${PORT}`);
+        console.log('Using JSON file storage instead of MongoDB');
+    });
 }
 
-main();
+main().catch(console.error);

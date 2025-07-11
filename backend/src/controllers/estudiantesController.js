@@ -1,10 +1,50 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ruta al archivo JSON
+const JSON_FILE_PATH = path.join(__dirname, '../../data/estudiantes.json');
+
 const estudiantesController = {};
-import estudiantesModel from "../models/estudiantes.js"
+
+// Función helper para leer el archivo JSON
+const readEstudiantesFromFile = async () => {
+    try {
+        const data = await fs.readFile(JSON_FILE_PATH, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading JSON file:', error);
+        // Si el archivo no existe, crear uno con estructura vacía
+        const initialData = { estudiantes: [] };
+        await writeEstudiantesToFile(initialData);
+        return initialData;
+    }
+};
+
+// Función helper para escribir al archivo JSON
+const writeEstudiantesToFile = async (data) => {
+    try {
+        await fs.writeFile(JSON_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+        console.error('Error writing JSON file:', error);
+        throw error;
+    }
+};
+
+// Función para generar un nuevo ID único
+const generateId = (estudiantes) => {
+    if (estudiantes.length === 0) return '1';
+    const maxId = Math.max(...estudiantes.map(est => parseInt(est.id) || 0));
+    return (maxId + 1).toString();
+};
 
 estudiantesController.getEstudiantes = async (req, res) => {
     try {
-        const estudiantes = await estudiantesModel.find();
-        res.json(estudiantes);
+        const data = await readEstudiantesFromFile();
+        res.json(data.estudiantes);
     } catch (error) {
         console.error('Error getting estudiantes:', error);
         res.status(500).json({ 
@@ -12,11 +52,11 @@ estudiantesController.getEstudiantes = async (req, res) => {
             error: error.message 
         });
     }
-}
+};
 
 estudiantesController.createEstudiantes = async (req, res) => {
     try {
-        const {carnet, nombre, apellido, grado, estado} = req.body;
+        const { carnet, nombre, apellido, grado, estado } = req.body;
         
         // Validación básica
         if (!carnet || !nombre || !apellido || !grado) {
@@ -25,23 +65,34 @@ estudiantesController.createEstudiantes = async (req, res) => {
             });
         }
 
+        const data = await readEstudiantesFromFile();
+        
         // Verificar si el carnet ya existe
-        const existingStudent = await estudiantesModel.findOne({ carnet });
+        const existingStudent = data.estudiantes.find(est => est.carnet === carnet);
         if (existingStudent) {
             return res.status(400).json({ 
                 message: "Ya existe un estudiante con ese carnet" 
             });
         }
 
-        const newEstudiante = new estudiantesModel({
+        // Crear nuevo estudiante
+        const newEstudiante = {
+            id: generateId(data.estudiantes),
             carnet, 
             nombre, 
             apellido, 
             grado, 
-            estado: estado || 'Activo'
-        });
+            estado: estado || 'Activo',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
         
-        await newEstudiante.save();
+        // Agregar al array
+        data.estudiantes.push(newEstudiante);
+        
+        // Guardar en archivo
+        await writeEstudiantesToFile(data);
+        
         res.status(201).json({ 
             message: "Estudiante creado exitosamente",
             estudiante: newEstudiante
@@ -53,18 +104,27 @@ estudiantesController.createEstudiantes = async (req, res) => {
             error: error.message 
         });
     }
-}
+};
 
 estudiantesController.deleteEstudiantes = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedEstudiante = await estudiantesModel.findByIdAndDelete(id);
+        const data = await readEstudiantesFromFile();
         
-        if (!deletedEstudiante) {
+        // Buscar el índice del estudiante
+        const studentIndex = data.estudiantes.findIndex(est => est.id === id);
+        
+        if (studentIndex === -1) {
             return res.status(404).json({ 
                 message: "Estudiante no encontrado" 
             });
         }
+        
+        // Remover estudiante del array
+        const deletedEstudiante = data.estudiantes.splice(studentIndex, 1)[0];
+        
+        // Guardar cambios
+        await writeEstudiantesToFile(data);
         
         res.json({ 
             message: "Estudiante eliminado exitosamente",
@@ -77,7 +137,7 @@ estudiantesController.deleteEstudiantes = async (req, res) => {
             error: error.message 
         });
     }
-}
+};
 
 estudiantesController.updateEstudiantes = async (req, res) => {
     try {
@@ -91,28 +151,42 @@ estudiantesController.updateEstudiantes = async (req, res) => {
             });
         }
 
+        const data = await readEstudiantesFromFile();
+        
+        // Buscar el estudiante
+        const studentIndex = data.estudiantes.findIndex(est => est.id === id);
+        
+        if (studentIndex === -1) {
+            return res.status(404).json({ 
+                message: "Estudiante no encontrado" 
+            });
+        }
+        
         // Verificar si el carnet ya existe en otro estudiante
-        const existingStudent = await estudiantesModel.findOne({ 
-            carnet, 
-            _id: { $ne: id } 
-        });
+        const existingStudent = data.estudiantes.find(est => 
+            est.carnet === carnet && est.id !== id
+        );
         if (existingStudent) {
             return res.status(400).json({ 
                 message: "Ya existe otro estudiante con ese carnet" 
             });
         }
 
-        const updatedEstudiante = await estudiantesModel.findByIdAndUpdate(
-            id, 
-            { carnet, nombre, apellido, grado, estado },
-            { new: true, runValidators: true }
-        );
+        // Actualizar estudiante
+        const updatedEstudiante = {
+            ...data.estudiantes[studentIndex],
+            carnet, 
+            nombre, 
+            apellido, 
+            grado, 
+            estado,
+            updatedAt: new Date().toISOString()
+        };
         
-        if (!updatedEstudiante) {
-            return res.status(404).json({ 
-                message: "Estudiante no encontrado" 
-            });
-        }
+        data.estudiantes[studentIndex] = updatedEstudiante;
+        
+        // Guardar cambios
+        await writeEstudiantesToFile(data);
         
         res.json({ 
             message: "Estudiante actualizado exitosamente",
@@ -125,13 +199,14 @@ estudiantesController.updateEstudiantes = async (req, res) => {
             error: error.message 
         });
     }
-}
+};
 
 estudiantesController.getEstudiantesById = async (req, res) => {
     try {
         const { id } = req.params;
+        const data = await readEstudiantesFromFile();
 
-        const estudiante = await estudiantesModel.findById(id);
+        const estudiante = data.estudiantes.find(est => est.id === id);
 
         if (!estudiante) {
             return res.status(404).json({
