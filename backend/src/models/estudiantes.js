@@ -15,43 +15,31 @@ import { Schema, model } from "mongoose";
 
 const estudiantesSchema = new Schema(
     {
-        firstName:
+        carnet:
         {
             type: String,
             required: true
         },
 
-        lastName:
+        nombre:
         {
             type: String,
             required: true
         },
 
-        birthDate:
-        {
-            type: Date,
-            required: true
-        },
-
-        dui:
+        apellido:
         {
             type: String,
             required: true
         },
 
-        password:
+        grado:
         {
             type: String,
             required: true
         },
 
-        email:
-        {
-            type: String,
-            required: true
-        },
-
-        phone:
+        estado:
         {
             type: String,
             required: true

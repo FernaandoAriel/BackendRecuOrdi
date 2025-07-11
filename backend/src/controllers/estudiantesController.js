@@ -7,15 +7,9 @@ estudiantesController.getEstudiantes = async (req, res) => {
 }
 
 estudiantesController.createEstudiantes = async (req, res) => {
-    const {firstName, lastName, birthDate, dui, password, email, phone} = req.body;
+    const {carnet, nombre, apellido, grado, estado} = req.body;
     const newEstudiante = new estudiantesModel({
-        firstName,
-        lastName,
-        birthDate,
-        dui,
-        password,
-        email,
-        phone
+        carnet, nombre, apellido, grado, estado
     });
     await newEstudiante.save();
     res.json({ message: "Estudiante creado" });
@@ -27,15 +21,13 @@ estudiantesController.deleteEstudiantes = async (req, res) => {
 }
 
 estudiantesController.updateEstudiantes = async (req, res) => {
-    const { firstName, lastName, birthDate, dui, password, email, phone} = req.body;
+    const { carnet, nombre, apellido, grado, estado} = req.body;
     await estudiantesModel.findByIdAndUpdate(req.params.id, {
-        firstName,
-        lastName,
-        birthDate,
-        dui,
-        password,
-        email,
-        phone
+        carnet,
+        nombre,
+        apellido,
+        grado,
+        estado
     });
     res.json({ message: "Estudiantes actualizado" });
 }
