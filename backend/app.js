@@ -12,9 +12,8 @@ app.use(
     })
 );
 app.use(express.json());
-
 app.use(cookieParser());
 
-app.use("/api/estudiantes", estudiantesRoutes)
+app.use("/api/estudiantes", estudiantesRoutes);
 
 export default app;
