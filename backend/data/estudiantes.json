@@ -301,14 +301,14 @@
       "updatedAt": "2025-01-01T00:00:00.000Z"
     },
     {
-      "id": "31",
-      "carnet": "20230032",
-      "nombre": "kEVIN",
-      "apellido": "MAN",
-      "grado": "6° Grado",
-      "estado": "Activo",
-      "createdAt": "2025-07-11T15:06:38.026Z",
-      "updatedAt": "2025-07-11T15:06:38.026Z"
+      "id": "32",
+      "carnet": "20220025",
+      "nombre": "Katherine",
+      "apellido": "Ceron",
+      "grado": "5° Grado",
+      "estado": "Inactivo",
+      "createdAt": "2025-07-11T19:21:50.348Z",
+      "updatedAt": "2025-07-11T19:34:49.343Z"
     }
   ]
 }

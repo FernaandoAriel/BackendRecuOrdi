@@ -13,6 +13,8 @@ const Bienvenida = () => {
     };
 
     return (
+        <>
+       
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center font-roboto overflow-hidden">
             {/* Efectos de luz de fondo */}
             <div className="absolute inset-0">
@@ -22,8 +24,11 @@ const Bienvenida = () => {
                 <div className="absolute bottom-1/3 left-1/4 w-72 h-72 bg-green-500/15 blur-2xl animate-pulse delay-700"></div>
             </div>
 
+
             <div className={`relative z-10 text-center max-w-4xl mx-auto px-6 transition-all duration-300 ${isAnimating ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}`}>
                 {/* Logo principal */}
+                 <br/>
+                  <br/>
                 <div className="mb-12 animate-fade-in">
                     <div className="w-32 h-32 mx-auto mb-8 relative">
                         <div className="w-full h-full bg-gradient-to-br from-purple-500 to-green-400 flex items-center justify-center transform transition-transform hover:scale-110 duration-500">
@@ -171,6 +176,7 @@ const Bienvenida = () => {
                 }
             `}</style>
         </div>
+        </>
     );
 };
 
